@@ -1,0 +1,13 @@
+---
+import { site } from "../../site.config";
+---
+
+{
+  site.bio && (
+    <section class="section" aria-labelledby="bio-heading">
+      <h2 id="bio-heading">{site.bio.heading ?? site.title}</h2>
+      <p>{site.bio.body}</p>
+      {site.bio.image && <img src={site.bio.image} alt="" loading="lazy" />}
+    </section>
+  )
+}

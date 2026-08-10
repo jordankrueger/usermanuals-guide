@@ -1,0 +1,14 @@
+---
+import { site } from "../../site.config";
+---
+
+{
+  site.cta && (
+    <section class="section" aria-labelledby="cta-heading">
+      <h2 id="cta-heading">{site.cta.label}</h2>
+      <a class="button" href={site.cta.href}>
+        {site.cta.label}
+      </a>
+    </section>
+  )
+}

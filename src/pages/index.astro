@@ -1,0 +1,19 @@
+---
+import ContactForm from "../components/ContactForm.astro";
+import Bio from "../components/sections/Bio.astro";
+import CTA from "../components/sections/CTA.astro";
+import Hero from "../components/sections/Hero.astro";
+import Links from "../components/sections/Links.astro";
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { site } from "../site.config";
+---
+
+<BaseLayout>
+  <main class="site-shell">
+    <Hero />
+    {site.bio && <Bio />}
+    {site.links?.length ? <Links /> : null}
+    {site.cta && <CTA />}
+    {site.form?.enabled && <ContactForm />}
+  </main>
+</BaseLayout>

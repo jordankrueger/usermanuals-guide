@@ -1,0 +1,18 @@
+---
+import { site } from "../../site.config";
+---
+
+<section class="hero" aria-labelledby="hero-heading">
+  <div>
+    <p class="hero__eyebrow">{site.title}</p>
+    <h1 id="hero-heading">{site.hero.heading}</h1>
+    {site.hero.subheading && <p class="hero__subheading">{site.hero.subheading}</p>}
+  </div>
+  {
+    site.hero.image && (
+      <div class="hero__media">
+        <img src={site.hero.image} alt="" loading="eager" />
+      </div>
+    )
+  }
+</section>

@@ -1,0 +1,16 @@
+---
+import { site } from "../site.config";
+
+const analyticsId = site.analyticsId;
+---
+
+{
+  analyticsId ? (
+    <script
+      is:inline
+      id="analytics-config"
+      type="application/json"
+      set:html={JSON.stringify({ analyticsId })}
+    />
+  ) : null
+}
