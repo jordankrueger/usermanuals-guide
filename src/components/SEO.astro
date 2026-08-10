@@ -2,15 +2,59 @@
 import { site } from "../site.config";
 
 const canonicalUrl = `https://${site.domain}`;
+const ogImage = `${canonicalUrl}/og.jpg`;
+
+const productSchema = {
+  "@context": "https://schema.org",
+  "@type": "Product",
+  name: "User Manuals Template for Notion",
+  description: site.description,
+  brand: { "@type": "Brand", name: "UserManuals.Guide" },
+  url: canonicalUrl,
+  image: ogImage,
+  offers: {
+    "@type": "Offer",
+    price: site.purchase.price.replace(/[^0-9.]/g, ""),
+    priceCurrency: "USD",
+    availability: "https://schema.org/InStock",
+    url: site.purchase.href,
+  },
+};
+
+const faqSchema = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: site.faq.map((item) => ({
+    "@type": "Question",
+    name: item.question,
+    acceptedAnswer: { "@type": "Answer", text: item.answer },
+  })),
+};
 ---
 
 <title>{site.title}</title>
 <meta name="description" content={site.description} />
 <link rel="canonical" href={canonicalUrl} />
+
+<meta property="og:site_name" content="UserManuals.Guide" />
 <meta property="og:title" content={site.title} />
 <meta property="og:description" content={site.description} />
 <meta property="og:url" content={canonicalUrl} />
 <meta property="og:type" content="website" />
+<meta property="og:image" content={ogImage} />
+
 <meta name="twitter:card" content="summary_large_image" />
 <meta name="twitter:title" content={site.title} />
 <meta name="twitter:description" content={site.description} />
+<meta name="twitter:image" content={ogImage} />
+
+<script
+  type="application/ld+json"
+  is:inline
+  set:html={JSON.stringify(productSchema)}
+/>
+<script
+  type="application/ld+json"
+  is:inline
+  set:html={JSON.stringify(faqSchema)}
+/>

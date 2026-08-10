@@ -3,8 +3,8 @@ import { onRequestPost } from "./submit";
 
 const env = {
   RESEND_API_KEY: "re_test",
-  FORM_TO: "jordan@jordankrueger.com",
-  FORM_FROM: "forms@example.com",
+  FORM_TO: "anthropic@pandemicsoul.com",
+  FORM_FROM: "forms@jordankrueger.com",
 };
 
 function buildContext(fields: Record<string, string>) {
@@ -20,21 +20,28 @@ function buildContext(fields: Record<string, string>) {
   };
 }
 
+function okFetch() {
+  const fetchMock = vi
+    .fn()
+    .mockResolvedValue(new Response(null, { status: 200 }));
+  vi.stubGlobal("fetch", fetchMock);
+  return fetchMock;
+}
+
 describe("onRequestPost", () => {
   afterEach(() => {
     vi.restoreAllMocks();
   });
 
   it("sends the submission to Resend and redirects to thanks", async () => {
-    const fetchMock = vi.fn().mockResolvedValue(new Response(null, { status: 200 }));
-    vi.stubGlobal("fetch", fetchMock);
+    const fetchMock = okFetch();
 
     const response = await onRequestPost(
       buildContext({
         name: "Jordan",
         email: "jordan@example.com",
         message: "Hello",
-        _site: "Carrd Starter",
+        _site: "usermanuals.guide",
       }),
     );
 
@@ -54,50 +61,76 @@ describe("onRequestPost", () => {
     expect(resendBody).toMatchObject({
       to: env.FORM_TO,
       from: env.FORM_FROM,
+      reply_to: "jordan@example.com",
     });
     expect(response.status).toBe(303);
     expect(response.headers.get("Location")).toBe("/thanks");
   });
 
   it("returns 400 and does not fetch when email is missing", async () => {
-    const fetchMock = vi.fn().mockResolvedValue(new Response(null, { status: 200 }));
-    vi.stubGlobal("fetch", fetchMock);
+    const fetchMock = okFetch();
 
     const response = await onRequestPost(
-      buildContext({
-        name: "Jordan",
-        message: "Hello",
-        _site: "Carrd Starter",
-      }),
+      buildContext({ name: "Jordan", message: "Hello" }),
     );
 
     expect(response.status).toBe(400);
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
-  it("posts to n8n webhook when _n8n is present", async () => {
-    const fetchMock = vi.fn().mockResolvedValue(new Response(null, { status: 200 }));
-    vi.stubGlobal("fetch", fetchMock);
-    const webhookUrl = "https://n8n.example.com/webhook/form";
+  it("returns 400 when the email is not a plausible address", async () => {
+    const fetchMock = okFetch();
+
+    const response = await onRequestPost(
+      buildContext({ email: "not-an-email", message: "Hello" }),
+    );
+
+    expect(response.status).toBe(400);
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("silently drops honeypot submissions without sending mail", async () => {
+    const fetchMock = okFetch();
 
     const response = await onRequestPost(
       buildContext({
-        name: "Jordan",
-        email: "jordan@example.com",
-        message: "Hello",
-        _site: "Carrd Starter",
-        _n8n: webhookUrl,
+        name: "Bot",
+        email: "bot@example.com",
+        message: "spam",
+        _gotcha: "filled in",
       }),
     );
 
+    expect(fetchMock).not.toHaveBeenCalled();
     expect(response.status).toBe(303);
-    expect(fetchMock).toHaveBeenCalledTimes(2);
-    expect(fetchMock).toHaveBeenNthCalledWith(
-      2,
-      webhookUrl,
-      expect.objectContaining({
-        method: "POST",
+    expect(response.headers.get("Location")).toBe("/thanks");
+  });
+
+  it("surfaces a 502 when Resend rejects the send", async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValue(new Response("nope", { status: 422 }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    const response = await onRequestPost(
+      buildContext({ email: "jordan@example.com", message: "Hello" }),
+    );
+
+    expect(response.status).toBe(502);
+  });
+
+  it("truncates an over-long message instead of forwarding it whole", async () => {
+    const fetchMock = okFetch();
+
+    await onRequestPost(
+      buildContext({
+        email: "jordan@example.com",
+        message: "x".repeat(9000),
       }),
     );
+
+    const resendBody = JSON.parse(fetchMock.mock.calls[0][1].body);
+    expect(resendBody.text).toContain("x".repeat(5000));
+    expect(resendBody.text).not.toContain("x".repeat(5001));
   });
 });

@@ -1,21 +1,26 @@
 ---
+import "@fontsource-variable/inter";
+
 import Analytics from "../components/Analytics.astro";
 import Footer from "../components/Footer.astro";
 import SEO from "../components/SEO.astro";
-import { site } from "../site.config";
 ---
 
 <!doctype html>
-<html lang="en" style={`--theme: ${site.themeColor}; --accent: ${site.accentColor};`}>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <meta name="theme-color" content="#0047d6" />
     <style is:global>
       @import "../styles/base.css";
     </style>
     <SEO />
   </head>
   <body>
+    <a class="skip-link" href="#main">Skip to content</a>
     <slot />
     <Footer />
     <Analytics />

@@ -2,26 +2,27 @@
 import { site } from "../site.config";
 ---
 
-{
-  site.form?.enabled ? (
-    <section class="section" aria-labelledby="contact-heading">
-      <h2 id="contact-heading">Contact</h2>
-      <form class="contact-form" method="POST" action="/api/submit">
-        <label>
-          <span>Name</span>
-          <input type="text" name="name" autocomplete="name" />
-        </label>
-        <label>
-          <span>Email</span>
-          <input type="email" name="email" autocomplete="email" required />
-        </label>
-        <label>
-          <span>Message</span>
-          <textarea name="message" rows="5" required></textarea>
-        </label>
-        <input type="hidden" name="_site" value={site.domain} />
-        <button class="button" type="submit">Send</button>
-      </form>
-    </section>
-  ) : null
-}
+<form class="contact-form" method="POST" action="/api/submit">
+  <label>
+    <span>Name</span>
+    <input type="text" name="name" autocomplete="name" />
+  </label>
+  <label>
+    <span>Email</span>
+    <input type="email" name="email" autocomplete="email" required />
+  </label>
+  <label>
+    <span>Message</span>
+    <textarea name="message" rows="5" required></textarea>
+  </label>
+
+  <div class="form-hp" aria-hidden="true">
+    <label>
+      Leave this field empty
+      <input type="text" name="_gotcha" tabindex="-1" autocomplete="off" />
+    </label>
+  </div>
+
+  <input type="hidden" name="_site" value={site.domain} />
+  <button class="button button--solid" type="submit">Send message</button>
+</form>

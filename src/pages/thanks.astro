@@ -3,11 +3,16 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 ---
 
 <BaseLayout>
-  <main class="site-shell">
-    <section class="section" aria-labelledby="thanks-heading">
-      <h1 id="thanks-heading">Thanks for your message</h1>
-      <p>Your message has been received.</p>
-      <a href="/">Back home</a>
-    </section>
+  <main id="main" class="section">
+    <div class="wrap">
+      <h1>Thanks for your message</h1>
+      <p class="section__lead">
+        It's on its way to Jordan and you'll get a reply at the email address you
+        gave.
+      </p>
+      <p>
+        <a class="button button--solid" href="/">Back to the template</a>
+      </p>
+    </div>
   </main>
 </BaseLayout>

@@ -1,19 +1,257 @@
 ---
+import { Image } from "astro:assets";
+
 import ContactForm from "../components/ContactForm.astro";
-import Bio from "../components/sections/Bio.astro";
-import CTA from "../components/sections/CTA.astro";
-import Hero from "../components/sections/Hero.astro";
-import Links from "../components/sections/Links.astro";
 import BaseLayout from "../layouts/BaseLayout.astro";
 import { site } from "../site.config";
+
+import jordanPhoto from "../assets/jordan.jpg";
+import notionLaunchpad from "../assets/notion-launchpad.jpg";
+import notionPortal from "../assets/notion-portal.jpg";
+import productIcon from "../assets/product-icon.jpg";
+import teamPhoto from "../assets/team.jpg";
+
+const whatsInside = [
+  "A full introduction to user manuals for the project manager, with supporting links",
+  "A plan to get your team onboard with user manuals",
+  "A comprehensive user manual template for team members with guidance and tips",
+  "Links to sample user manuals for inspiration",
+  "Detailed instructions for team members, explaining how to add a new user manual in the Notion database",
+];
+
+const benefits = [
+  "You're working with a team of people",
+  "You want your team to learn more about each other",
+  "You want your team to communicate more effectively",
+  "You don't want to spend the time researching and creating your own user manual template",
+];
 ---
 
 <BaseLayout>
-  <main class="site-shell">
-    <Hero />
-    {site.bio && <Bio />}
-    {site.links?.length ? <Links /> : null}
-    {site.cta && <CTA />}
-    {site.form?.enabled && <ContactForm />}
+  <header class="hero">
+    <div class="wrap hero__grid">
+      <div class="hero__art">
+        <Image
+          src={productIcon}
+          alt="User Manuals Template for Notion product icon"
+          widths={[320, 640]}
+          sizes="(min-width: 62rem) 20rem, 60vw"
+          loading="eager"
+        />
+      </div>
+
+      <div>
+        <h1>{site.hero.heading}</h1>
+        <p class="hero__sub">{site.hero.subheading}</p>
+
+        <div class="hero__actions">
+          <a class="button" href="#purchase">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <circle cx="9" cy="20" r="1"></circle>
+              <circle cx="18" cy="20" r="1"></circle>
+              <path d="M1 1h4l2.7 12.4a2 2 0 0 0 2 1.6h8.7a2 2 0 0 0 2-1.6L23 6H6"
+              ></path>
+            </svg>
+            Purchase
+          </a>
+          <a class="button button--ghost" href="#what-is-it">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M12 5v14M19 12l-7 7-7-7"></path>
+            </svg>
+            Learn more
+          </a>
+        </div>
+
+        <p class="hero__badge">
+          <a
+            href="https://www.producthunt.com/posts/user-manuals-template-for-notion?utm_source=badge-featured&utm_medium=badge&utm_souce=badge-user-manuals-template-for-notion"
+            target="_blank"
+            rel="noopener"
+          >
+            <img
+              src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=325392&theme=light"
+              alt="User Manuals Template for Notion - Help your team define and share their work style with peers. | Product Hunt"
+              width="250"
+              height="54"
+              loading="lazy"
+            />
+          </a>
+        </p>
+      </div>
+    </div>
+  </header>
+
+  <main id="main">
+    <section class="section" id="what-is-it" aria-labelledby="what-is-it-h">
+      <div class="wrap split">
+        <div>
+          <h2 id="what-is-it-h">What's a "user manual"?</h2>
+          <p>
+            User manuals are a tool to help our coworkers understand us better.
+            Simply put, it's a personal profile that includes probing questions
+            about a person's communication style, direction on how they like to
+            receive feedback, and how they approach conflict. After creating
+            these profiles, our managers and coworkers can reference the manual
+            to guide the way they work with us.
+          </p>
+        </div>
+        <div class="split__media">
+          <Image
+            src={teamPhoto}
+            alt="Two colleagues talking at a desk in an office"
+            widths={[480, 800, 1200]}
+            sizes="(min-width: 62rem) 32rem, 92vw"
+            loading="lazy"
+          />
+        </div>
+      </div>
+    </section>
+
+    <section class="section section--tint" aria-label="Testimonial">
+      <div class="wrap">
+        <figure class="quote">
+          <blockquote>
+            "I learned some practical tips about how to deal with my co-workers.
+            When my immediate neighbor wears headphones, I now know she doesn't
+            want to be disturbed (sorry, Sarah!). Corinne is on the west coast,
+            and at times is offline managing child care, so it's helpful to know
+            when she's out of reach, and that she can feel cut off from the rest
+            of us."
+          </blockquote>
+          <figcaption>
+            &mdash; Oliver Staley in <a
+              href="https://qz.com/work/1163181/?utm_term=mucp"
+              rel="noopener">Quartz</a
+            >
+          </figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section class="section" id="whats-inside" aria-labelledby="whats-inside-h">
+      <div class="wrap split split--media-first">
+        <div class="split__media gallery">
+          <Image
+            src={notionPortal}
+            alt="The User Manuals Portal page in Notion, showing the user manuals database"
+            widths={[480, 800, 1200]}
+            sizes="(min-width: 62rem) 32rem, 92vw"
+            loading="lazy"
+          />
+          <Image
+            src={notionLaunchpad}
+            alt="The User Manuals Launch Pad page in Notion"
+            widths={[480, 800, 1200]}
+            sizes="(min-width: 62rem) 32rem, 92vw"
+            loading="lazy"
+          />
+        </div>
+        <div>
+          <h2 id="whats-inside-h">What's inside</h2>
+          <ul class="checklist">
+            {whatsInside.map((item) => <li>{item}</li>)}
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="section section--tint" aria-labelledby="benefits-h">
+      <div class="wrap">
+        <h2 id="benefits-h">You'll benefit from this if&hellip;</h2>
+        <ul class="checklist">
+          {benefits.map((item) => <li>{item}</li>)}
+        </ul>
+      </div>
+    </section>
+
+    <section class="section" id="about" aria-labelledby="about-h">
+      <div class="wrap split split--media-first">
+        <div class="split__media author__photo">
+          <Image
+            src={jordanPhoto}
+            alt="Jordan Krueger"
+            widths={[288, 576]}
+            sizes="(min-width: 62rem) 18rem, 70vw"
+            loading="lazy"
+          />
+        </div>
+        <div>
+          <h2 id="about-h">Who created this</h2>
+          <p>
+            Jordan Krueger is an experienced team &amp; community builder, and
+            an operations guru. He's the founder and CEO of <a
+              href="https://campaign.help"
+              rel="noopener">CampaignHelp</a
+            >, an agency adding operations and administrative capacity for
+            digital advocacy organizations.
+          </p>
+          <p>
+            <a href="https://jordankrueger.com" rel="noopener"
+              >Learn more about Jordan.</a
+            >
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section section--tint" id="faq" aria-labelledby="faq-h">
+      <div class="wrap">
+        <h2 id="faq-h">Frequently asked questions</h2>
+        <div class="faq">
+          {
+            site.faq.map((item, index) => (
+              <details open={index === 0}>
+                <summary>{item.question}</summary>
+                <p>{item.answer}</p>
+                {index === 1 && (
+                  <figure>
+                    <img
+                      src="/duplicate-template.gif"
+                      alt="Animation showing the Duplicate button in Notion being used to copy the User Manuals Launch Pad into your own workspace"
+                      width="1196"
+                      height="975"
+                      loading="lazy"
+                    />
+                  </figure>
+                )}
+              </details>
+            ))
+          }
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="purchase" aria-labelledby="purchase-h">
+      <div class="wrap">
+        <div class="purchase">
+          <h2 id="purchase-h">Purchase</h2>
+          <p class="purchase__price">{site.purchase.price}</p>
+          <ul>
+            {site.purchase.lines.map((line) => <li>{line}</li>)}
+          </ul>
+          <a class="button" href={site.purchase.href} rel="noopener">
+            {site.purchase.label}
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M5 12h14M12 5l7 7-7 7"></path>
+            </svg>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <section class="section section--tint" id="support" aria-labelledby="support-h">
+      <div class="wrap split">
+        <div>
+          <h2 id="support-h">Support &amp; feedback</h2>
+          <p>
+            Need help or have thoughts about the template? Send a note using the
+            form and I'll get back to you.
+          </p>
+        </div>
+        <div>
+          <ContactForm />
+        </div>
+      </div>
+    </section>
   </main>
 </BaseLayout>

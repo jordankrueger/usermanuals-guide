@@ -9,31 +9,45 @@ interface PagesFunctionContext {
   env: Env;
 }
 
-function fieldValue(formData: FormData, key: string): string {
+const MAX_NAME = 200;
+const MAX_EMAIL = 320;
+const MAX_MESSAGE = 5000;
+
+function fieldValue(formData: FormData, key: string, max: number): string {
   const value = formData.get(key);
-  return typeof value === "string" ? value.trim() : "";
+  return typeof value === "string" ? value.trim().slice(0, max) : "";
 }
 
-function looksLikeUrl(value: string): boolean {
-  try {
-    const url = new URL(value);
-    return url.protocol === "http:" || url.protocol === "https:";
-  } catch {
-    return false;
-  }
+function looksLikeEmail(value: string): boolean {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+}
+
+function seeOtherThanks(): Response {
+  return new Response(null, { status: 303, headers: { Location: "/thanks" } });
 }
 
 export const onRequestPost = async (context: PagesFunctionContext) => {
-  const formData = await context.request.formData();
   const { env } = context;
 
-  const name = fieldValue(formData, "name");
-  const email = fieldValue(formData, "email");
-  const message = fieldValue(formData, "message");
-  const site = fieldValue(formData, "_site");
-  const n8nWebhook = fieldValue(formData, "_n8n");
+  let formData: FormData;
+  try {
+    formData = await context.request.formData();
+  } catch {
+    return new Response("Invalid submission", { status: 400 });
+  }
 
-  if (!email || !message) {
+  // Honeypot: bots fill every field, humans never see this one. Answer 303 so
+  // the bot cannot tell it was rejected.
+  if (fieldValue(formData, "_gotcha", 100)) {
+    return seeOtherThanks();
+  }
+
+  const name = fieldValue(formData, "name", MAX_NAME);
+  const email = fieldValue(formData, "email", MAX_EMAIL);
+  const message = fieldValue(formData, "message", MAX_MESSAGE);
+  const site = fieldValue(formData, "_site", 100);
+
+  if (!looksLikeEmail(email) || !message) {
     return new Response("Invalid submission", { status: 400 });
   }
 
@@ -46,8 +60,8 @@ export const onRequestPost = async (context: PagesFunctionContext) => {
     body: JSON.stringify({
       from: env.FORM_FROM,
       to: env.FORM_TO,
-      subject: `New message from ${site || env.FORM_TO}`,
-      text: `Name: ${name}\nEmail: ${email}\n\n${message}`,
+      subject: `New message from ${site || "the contact form"}`,
+      text: `Name: ${name || "(not given)"}\nEmail: ${email}\n\n${message}`,
       reply_to: email,
     }),
   });
@@ -58,26 +72,10 @@ export const onRequestPost = async (context: PagesFunctionContext) => {
     console.error(
       `Resend send failed: ${emailResponse.status} for _site=${site || "(none)"}`,
     );
+    return new Response("Could not send your message. Please try again.", {
+      status: 502,
+    });
   }
 
-  if (n8nWebhook && looksLikeUrl(n8nWebhook)) {
-    try {
-      await fetch(n8nWebhook, {
-        method: "POST",
-        headers: {
-          "content-type": "application/json",
-        },
-        body: JSON.stringify(Object.fromEntries(formData.entries())),
-      });
-    } catch {
-      // The webhook is best effort; email delivery remains the primary action.
-    }
-  }
-
-  return new Response(null, {
-    status: 303,
-    headers: {
-      Location: "/thanks",
-    },
-  });
+  return seeOtherThanks();
 };

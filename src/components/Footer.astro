@@ -1,7 +1,18 @@
 ---
-import { site } from "../site.config";
+const year = new Date().getFullYear();
 ---
 
 <footer class="site-footer">
-  <small>{site.domain}</small>
+  <div class="wrap">
+    <p>
+      Photo of two team members by <a
+        href="https://unsplash.com/@airfocus?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText"
+        rel="noopener">airfocus</a
+      > on <a
+        href="https://unsplash.com/s/photos/team?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText"
+        rel="noopener">Unsplash</a
+      >.
+    </p>
+    <p>&copy; Jordan Krueger, {year}. All rights reserved.</p>
+  </div>
 </footer>
