@@ -7,9 +7,9 @@ const ogImage = `${canonicalUrl}/og.jpg`;
 const productSchema = {
   "@context": "https://schema.org",
   "@type": "Product",
-  name: "User Manuals Template for Notion",
+  name: site.hero.heading,
   description: site.description,
-  brand: { "@type": "Brand", name: "UserManuals.Guide" },
+  brand: { "@type": "Brand", name: site.brandName },
   url: canonicalUrl,
   image: ogImage,
   offers: {
@@ -36,7 +36,7 @@ const faqSchema = {
 <meta name="description" content={site.description} />
 <link rel="canonical" href={canonicalUrl} />
 
-<meta property="og:site_name" content="UserManuals.Guide" />
+<meta property="og:site_name" content={site.brandName} />
 <meta property="og:title" content={site.title} />
 <meta property="og:description" content={site.description} />
 <meta property="og:url" content={canonicalUrl} />

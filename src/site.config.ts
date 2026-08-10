@@ -1,14 +1,3 @@
-export interface FormConfig {
-  enabled: boolean;
-  toEmail: string;
-  n8nWebhook?: string;
-}
-
-export interface LinkItem {
-  label: string;
-  href: string;
-}
-
 export interface FaqItem {
   question: string;
   answer: string;
@@ -16,15 +5,16 @@ export interface FaqItem {
 
 export interface SiteConfig {
   domain: string;
+  /** Display name for the brand, used in structured data. */
+  brandName: string;
   title: string;
   description: string;
+  /** Drives <meta name="theme-color">. Keep in sync with --brand-blue in base.css. */
   themeColor: string;
-  accentColor: string;
   analyticsId?: string;
   hero: {
     heading: string;
     subheading?: string;
-    image?: string;
   };
   purchase: {
     price: string;
@@ -33,16 +23,15 @@ export interface SiteConfig {
     lines: string[];
   };
   faq: FaqItem[];
-  form?: FormConfig;
 }
 
 export const site: SiteConfig = {
   domain: "usermanuals.guide",
+  brandName: "UserManuals.Guide",
   title: "User Manuals Template for Notion — UserManuals.Guide",
   description:
     "A Notion template that helps your team define and share their work style with peers and managers, to shorten the learning curve of onboarding and team building.",
-  themeColor: "#0055FA",
-  accentColor: "#00C9A7",
+  themeColor: "#0047d6",
   hero: {
     heading: "User Manuals Template for Notion",
     subheading:
@@ -79,8 +68,4 @@ export const site: SiteConfig = {
         "Purchasing the template provides a license for all of one company's employees. You'll have all the access you need for your team, or company, to create user manuals. Please do not share the template with friends or others outside your company. If you need a license for a second business entity, reach out to me for a discount.",
     },
   ],
-  form: {
-    enabled: true,
-    toEmail: "anthropic@pandemicsoul.com",
-  },
 };
