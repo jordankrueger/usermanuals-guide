@@ -11,6 +11,8 @@ export interface SiteConfig {
   description: string;
   /** Drives <meta name="theme-color">. Keep in sync with --brand-blue in base.css. */
   themeColor: string;
+  /** Path to the 1200x630 social card in public/. */
+  ogImage: string;
   analyticsId?: string;
   hero: {
     heading: string;
@@ -32,6 +34,7 @@ export const site: SiteConfig = {
   description:
     "A Notion template that helps your team define and share their work style with peers and managers, to shorten the learning curve of onboarding and team building.",
   themeColor: "#0047d6",
+  ogImage: "/og.jpg",
   hero: {
     heading: "User Manuals Template for Notion",
     subheading:

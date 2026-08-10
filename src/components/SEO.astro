@@ -2,7 +2,7 @@
 import { site } from "../site.config";
 
 const canonicalUrl = `https://${site.domain}`;
-const ogImage = `${canonicalUrl}/og.jpg`;
+const ogImage = new URL(site.ogImage, canonicalUrl).href;
 
 const productSchema = {
   "@context": "https://schema.org",
