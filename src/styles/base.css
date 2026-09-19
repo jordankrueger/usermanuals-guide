@@ -323,15 +323,7 @@ p {
   font-size: 0.95rem;
 }
 
-/* ---------- cards ---------- */
-
-.card {
-  padding: clamp(1.5rem, 3vw, 2.25rem);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  background: var(--surface);
-  box-shadow: var(--shadow-sm);
-}
+/* ---------- gallery ---------- */
 
 .gallery {
   display: grid;
