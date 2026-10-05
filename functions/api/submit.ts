@@ -2,6 +2,7 @@ export interface Env {
   RESEND_API_KEY: string;
   FORM_TO: string;
   FORM_FROM: string;
+  TURNSTILE_SECRET_KEY: string;
 }
 
 interface PagesFunctionContext {
@@ -12,6 +13,13 @@ interface PagesFunctionContext {
 const MAX_NAME = 200;
 const MAX_EMAIL = 320;
 const MAX_MESSAGE = 5000;
+const TURNSTILE_VERIFY_URL =
+  "https://challenges.cloudflare.com/turnstile/v0/siteverify";
+const TURNSTILE_HOSTNAMES = new Set([
+  "usermanuals.guide",
+  "www.usermanuals.guide",
+  "usermanuals-guide.pages.dev",
+]);
 
 function fieldValue(formData: FormData, key: string, max: number): string {
   const value = formData.get(key);
@@ -24,6 +32,42 @@ function looksLikeEmail(value: string): boolean {
 
 function seeOtherThanks(): Response {
   return new Response(null, { status: 303, headers: { Location: "/thanks" } });
+}
+
+async function verifyTurnstile(
+  token: string,
+  secret: string,
+  remoteIp: string | null,
+): Promise<boolean> {
+  if (!token || !secret) return false;
+
+  const body = new URLSearchParams({ secret, response: token });
+  if (remoteIp) body.set("remoteip", remoteIp);
+
+  try {
+    const response = await fetch(TURNSTILE_VERIFY_URL, {
+      method: "POST",
+      headers: { "content-type": "application/x-www-form-urlencoded" },
+      body,
+      signal: AbortSignal.timeout(10000),
+    });
+    if (!response.ok) return false;
+
+    const result = (await response.json()) as {
+      success?: boolean;
+      hostname?: string;
+      action?: string;
+    };
+    return Boolean(
+      result.success &&
+        result.hostname &&
+        TURNSTILE_HOSTNAMES.has(result.hostname) &&
+        result.action === "contact",
+    );
+  } catch (error) {
+    console.error("Turnstile validation failed", error);
+    return false;
+  }
 }
 
 export const onRequestPost = async (context: PagesFunctionContext) => {
@@ -46,9 +90,26 @@ export const onRequestPost = async (context: PagesFunctionContext) => {
   const email = fieldValue(formData, "email", MAX_EMAIL);
   const message = fieldValue(formData, "message", MAX_MESSAGE);
   const site = fieldValue(formData, "_site", 100);
+  const turnstileToken = fieldValue(
+    formData,
+    "cf-turnstile-response",
+    2048,
+  );
 
   if (!looksLikeEmail(email) || !message) {
     return new Response("Invalid submission", { status: 400 });
+  }
+
+  const remoteIp = context.request.headers.get("CF-Connecting-IP");
+  const turnstileValid = await verifyTurnstile(
+    turnstileToken,
+    env.TURNSTILE_SECRET_KEY,
+    remoteIp,
+  );
+  if (!turnstileValid) {
+    return new Response("Please complete the security check and try again.", {
+      status: 400,
+    });
   }
 
   const emailResponse = await fetch("https://api.resend.com/emails", {

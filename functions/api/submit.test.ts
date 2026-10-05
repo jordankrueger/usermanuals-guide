@@ -5,13 +5,18 @@ const env = {
   RESEND_API_KEY: "re_test",
   FORM_TO: "anthropic@pandemicsoul.com",
   FORM_FROM: "forms@jordankrueger.com",
+  TURNSTILE_SECRET_KEY: "turnstile_test",
 };
 
 function buildContext(fields: Record<string, string>) {
+  const body = new URLSearchParams({
+    "cf-turnstile-response": "valid-token",
+    ...fields,
+  });
   return {
     request: new Request("https://x/api/submit", {
       method: "POST",
-      body: new URLSearchParams(fields),
+      body,
       headers: {
         "content-type": "application/x-www-form-urlencoded",
       },
@@ -23,7 +28,14 @@ function buildContext(fields: Record<string, string>) {
 function okFetch() {
   const fetchMock = vi
     .fn()
-    .mockResolvedValue(new Response(null, { status: 200 }));
+    .mockResolvedValueOnce(
+      Response.json({
+        success: true,
+        hostname: "usermanuals.guide",
+        action: "contact",
+      }),
+    )
+    .mockResolvedValueOnce(new Response(null, { status: 200 }));
   vi.stubGlobal("fetch", fetchMock);
   return fetchMock;
 }
@@ -45,8 +57,14 @@ describe("onRequestPost", () => {
       }),
     );
 
-    expect(fetchMock).toHaveBeenCalledOnce();
-    expect(fetchMock).toHaveBeenCalledWith(
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      1,
+      "https://challenges.cloudflare.com/turnstile/v0/siteverify",
+      expect.objectContaining({ method: "POST" }),
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      2,
       "https://api.resend.com/emails",
       expect.objectContaining({
         method: "POST",
@@ -57,7 +75,7 @@ describe("onRequestPost", () => {
       }),
     );
 
-    const resendBody = JSON.parse(fetchMock.mock.calls[0][1].body);
+    const resendBody = JSON.parse(fetchMock.mock.calls[1][1].body);
     expect(resendBody).toMatchObject({
       to: env.FORM_TO,
       from: env.FORM_FROM,
@@ -106,10 +124,48 @@ describe("onRequestPost", () => {
     expect(response.headers.get("Location")).toBe("/thanks");
   });
 
+  it("rejects submissions without a Turnstile token", async () => {
+    const fetchMock = okFetch();
+
+    const response = await onRequestPost(
+      buildContext({
+        email: "jordan@example.com",
+        message: "Hello",
+        "cf-turnstile-response": "",
+      }),
+    );
+
+    expect(response.status).toBe(400);
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("rejects submissions Cloudflare identifies as automated", async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValue(
+        Response.json({ success: false, "error-codes": ["invalid-input-response"] }),
+      );
+    vi.stubGlobal("fetch", fetchMock);
+
+    const response = await onRequestPost(
+      buildContext({ email: "bot@example.com", message: "spam" }),
+    );
+
+    expect(response.status).toBe(400);
+    expect(fetchMock).toHaveBeenCalledOnce();
+  });
+
   it("surfaces a 502 when Resend rejects the send", async () => {
     const fetchMock = vi
       .fn()
-      .mockResolvedValue(new Response("nope", { status: 422 }));
+      .mockResolvedValueOnce(
+        Response.json({
+          success: true,
+          hostname: "usermanuals.guide",
+          action: "contact",
+        }),
+      )
+      .mockResolvedValueOnce(new Response("nope", { status: 422 }));
     vi.stubGlobal("fetch", fetchMock);
 
     const response = await onRequestPost(
@@ -129,7 +185,7 @@ describe("onRequestPost", () => {
       }),
     );
 
-    const resendBody = JSON.parse(fetchMock.mock.calls[0][1].body);
+    const resendBody = JSON.parse(fetchMock.mock.calls[1][1].body);
     expect(resendBody.text).toContain("x".repeat(5000));
     expect(resendBody.text).not.toContain("x".repeat(5001));
   });
